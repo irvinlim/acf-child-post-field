@@ -982,31 +982,43 @@ class ACF_Child_Post_Field_V5 extends acf_field {
 	 *  @param	$input (string) the corresponding input name for $_POST value
 	 *  @return	$valid
 	 */
-
-	/*
+	 
+	 // Somewhat works, allows validation of child fields with popup notification above the input.
 
 	  function validate_value( $valid, $value, $field, $input ){
+	  	$stillvalid = $valid;
+	  	$fieldname = "acf[{$field['key']}]";
 
-	  // Basic usage
-	  if( $value < $field['custom_minimum_setting'] )
-	  {
-	  $valid = false;
+	  	foreach ($value as $rowkey => $row) {
+
+		  	foreach ($field['acf_child_field_fields'] as $childfield) {
+		  		$childvalue = @$row[$childfield['key']] ?: "";
+					$childvalid = true;
+		  		$message = $childfield['label'] . " is required.";
+
+					if( $childfield['required'] ) {
+						if( empty($childvalue) && !is_numeric($childvalue) ) {
+							$childvalid = false;
+							$stillvalid = false;
+						}
+					}
+
+		  		$childvalid = apply_filters( "acf/validate_value/type={$childfield['type']}", $childvalid, $childvalue, $field, $input );
+
+		  		if( !empty($childvalid) && is_string($childvalid) ) {
+		  			$message = $childvalid;
+						$childvalid = false;
+						$stillvalid = false;
+		  		}
+
+		  		if (!$childvalid) acf_add_validation_error( "{$fieldname}[{$rowkey}][{$childfield['key']}]",  $message);
+		  	}
+
+			}
+
+			return $stillvalid ?: "Please check your entries.";
+
 	  }
-
-
-	  // Advanced usage
-	  if( $value < $field['custom_minimum_setting'] )
-	  {
-	  $valid = __('The value is too little!','acf-FIELD_NAME'),
-	  }
-
-
-	  // return
-	  return $valid;
-
-	  }
-
-	 */
 
 
 	/*
